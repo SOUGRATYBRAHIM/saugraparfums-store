@@ -27,7 +27,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
             ],
-        ])->cookie('admin_token', $token, 60 * 8,'/', null, $isProduction, true, false, 'Strict'       
+        ])->cookie('admin_token', $token, 60 * 8,'/', null, $isProduction, true, false, 'Lax'       
         );
     }
 

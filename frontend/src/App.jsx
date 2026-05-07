@@ -1,122 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './store/AuthContext'
+import { CartProvider } from './store/CartContext'
+import ProtectedRoute from './components/ui/ProtectedRoute'
 
-function App() {
-  const [count, setCount] = useState(0)
+// ── Lazy load pages for performance (code splitting) ──────────────
+const HomePage          = lazy(() => import('./pages/HomePage'))
+const ProductsPage      = lazy(() => import('./pages/ProductsPage'))
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'))
+const CartPage          = lazy(() => import('./pages/CartPage'))
+const CheckoutPage      = lazy(() => import('./pages/CheckoutPage'))
+const OrderSuccessPage  = lazy(() => import('./pages/OrderSuccessPage'))
+const AdminLoginPage    = lazy(() => import('./pages/admin/AdminLoginPage'))
+const AdminDashboard    = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminProducts     = lazy(() => import('./pages/admin/AdminProducts'))
+const AdminOrders       = lazy(() => import('./pages/admin/AdminOrders'))
 
+// Simple full-screen loader shown while chunks load
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-cream">
+    <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+  </div>
+)
+
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
 
-      <div className="ticks"></div>
+              {/* ── Public store ─────────────────────────────── */}
+              <Route path="/"              element={<HomePage />} />
+              <Route path="/products"      element={<ProductsPage />} />
+              <Route path="/products/:id"  element={<ProductDetailPage />} />
+              <Route path="/cart"          element={<CartPage />} />
+              <Route path="/checkout"      element={<CheckoutPage />} />
+              <Route path="/order-success" element={<OrderSuccessPage />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+              {/* ── Admin auth ───────────────────────────────── */}
+              <Route path="/admin/login"   element={<AdminLoginPage />} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+              {/* ── Admin protected ──────────────────────────── */}
+              <Route path="/admin" element={
+                <ProtectedRoute><AdminDashboard /></ProtectedRoute>
+              } />
+              <Route path="/admin/products" element={
+                <ProtectedRoute><AdminProducts /></ProtectedRoute>
+              } />
+              <Route path="/admin/orders" element={
+                <ProtectedRoute><AdminOrders /></ProtectedRoute>
+              } />
+
+            </Routes>
+          </Suspense>
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
-
-export default App
